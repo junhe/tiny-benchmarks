@@ -5,7 +5,7 @@ OBJS=main.o
 CFLAGS=-Wall -D_FILE_OFFSET_BITS=64
 CC=g++
 INCLUDES=
-LIBS=
+LIBS=-lpthread -lrt
 cputest.x:${OBJS}
 	${CC} ${CFLAGS} ${INCLUDES} -o $@ ${OBJS} ${LIBS}
 
