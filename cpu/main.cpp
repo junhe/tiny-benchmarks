@@ -51,14 +51,14 @@ struct timespec diff(struct timespec start, struct timespec end)
 void *DoOperations(void *t)
 {
     unsigned long long i;
-    long tid;
+    //long tid;
     double a = 0.9980;
     double b = -100000.0;
 
     int ai = 8;
     int bi = 10;
 
-    tid = (long)t;
+    //tid = (long)t;
     
     if ( optypenum == 0 ) {
         printf("Doing floating operations\n");
@@ -150,8 +150,8 @@ int main (int argc, char *argv[])
     clock_gettime(TIMING_METHOD, &time2); // get end time
     totaltime = diff(time1,time2).tv_sec + diff(time1,time2).tv_nsec/1000000000.0;
 
-    double opps = (NUM_LOOP/1000000.0)  * OPS_PER_LOOP * nthreads / totaltime;
-    printf("Op-Type Total-Time(second) Op-Per-Sec(Million Ops Per Second)\n");
+    double opps = (NUM_LOOP/1000000000.0)  * OPS_PER_LOOP * nthreads / totaltime;
+    printf("Op-Type Total-Time(second) Op-Per-Sec(Giga Ops Per Second)\n");
     printf("%s %lf %lf\n", optype.c_str(), totaltime, opps);
 
     pthread_exit(NULL);
