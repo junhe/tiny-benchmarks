@@ -44,8 +44,8 @@ int optypenum;
 #define TYPERANDOM     1
 long long blocksize;
 int nthreads; // number of threads
-long long datasize;  // size of memory per thread
-long long blockcnt; 
+long long datasize_per_thread;  // size of memory per thread
+long long blockcnt_whole_file; 
 long long blockcntperthread;
 vector<long long> seqvec;
 int rwmode;
@@ -79,20 +79,24 @@ void *DoOperations(void *t)
 
     if ( optypenum == TYPESEQUENTIAL ) {
         // sequential copy
-        int i;
-        for ( i = 0 ; i < blockcnt ; i++ ) {
+        long long i;
+        long long base;
+        base = datasize_per_thread * tid;
+        for ( i = 0 ; i < blockcntperthread ; i++ ) {
             if ( rwmode == MODEREAD ) {
-                bytes += pread(fd, datamem[tid], blocksize, blocki*blocksize);
+                bytes += pread(fd, datamem[tid], blocksize, base + i*blocksize);
             } else {
-                bytes += pwrite(fd, datamem[tid], blocksize, blocki*blocksize);
+                bytes += pwrite(fd, datamem[tid], blocksize, base + i*blocksize);
             } 
         }
     } else {
         // random copy
-        int i;
+        long long i;
+        long long base;
+        base = blockcntperthread * tid;
         int blocki;
-        for ( i = 0 ; i < blockcnt ; i++ ) {
-            blocki = seqvec[i];
+        for ( i = 0 ; i < blockcntperthread ; i++ ) {
+            blocki = seqvec[base+i];
             if ( rwmode == MODEREAD ) {
                 bytes += pread(fd, datamem[tid], blocksize, blocki*blocksize);
             } else {
@@ -139,9 +143,11 @@ int main (int argc, char *argv[])
     }
 
     blocksize = atol(argv[3]);
-    datasize = atol(argv[4]);
-    blockcnt = (datasize*nthreads)/blocksize;
-    blockcntperthread = datasize/blocksize;
+    datasize_per_thread = atol(argv[4]);
+    blockcnt_whole_file = (datasize_per_thread*nthreads)/blocksize; // this is the 
+                                                    // total number of blocks
+                                                    // in the whole file
+    blockcntperthread = datasize_per_thread/blocksize;
     fpath = argv[5];
     rwmode = atoi(argv[6]); 
     if ( rwmode == MODEREAD ) {
@@ -159,7 +165,7 @@ int main (int argc, char *argv[])
 
     // Shuffle sequential number to get random sequences
     long long i;
-    for ( i = 0 ; i < blockcnt ; i++ ) {
+    for ( i = 0 ; i < blockcnt_whole_file ; i++ ) {
         seqvec.push_back(i);
     }
 
@@ -207,8 +213,8 @@ int main (int argc, char *argv[])
     printf("    File-Size Total-Time(second) Bandwidth(MB/s) Latency(ms) Block-Size Block-Count"
            "   Rwmode Access-Type\n");
     printf("%13lld %18lf %15lf %10f %10lld %10lld %10s %11s\n",
-           datasize*nthreads, totaltime, (datasize/1000000.0)*nthreads/totaltime, 
-           totaltime*1000.0/blockcnt, blocksize, blockcnt, 
+           datasize_per_thread*nthreads, totaltime, (datasize_per_thread/1000000.0)*nthreads/totaltime, 
+           totaltime*1000.0/blockcnt_whole_file, blocksize, blockcnt_whole_file, 
            rwmodestr.c_str(), optypestr.c_str()); 
 
     close(fd);
