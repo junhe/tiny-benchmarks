@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <vector>
+#include <algorithm>
 
 #define NUM_THREADS_MAX     128
 //#define TIMING_METHOD CLOCK_PROCESS_CPUTIME_ID
@@ -37,6 +39,7 @@ long long blocksize;
 int nthreads; // number of threads
 long long memsize;  // size of memory per thread
 long long blockcnt; 
+vector<long long> seqvec;
 
 char *frommem[NUM_THREADS_MAX]; // copy from this memory
 char *tomem[NUM_THREADS_MAX];  // to this memory
@@ -76,7 +79,7 @@ void *DoOperations(void *t)
         int i;
         int blocki;
         for ( i = 0 ; i < blockcnt ; i++ ) {
-            blocki = blockcnt * (rand() / (double)RAND_MAX); // choose a block
+            blocki = seqvec[i];
             memcpy(tomem[tid] + (blocki*blocksize), 
                    frommem[tid] + (blocki*blocksize), 
                    blocksize);
@@ -114,6 +117,19 @@ int main (int argc, char *argv[])
     memsize = atol(argv[4]);
     blockcnt = memsize/blocksize;
 
+    long long i;
+    for ( i = 0 ; i < blockcnt ; i++ ) {
+        seqvec.push_back(i);
+    }
+
+    srand ( unsigned ( time(0) ) );
+    random_shuffle ( seqvec.begin(), seqvec.end() );
+    /*  
+    for ( i = 0 ; i < 100 ; i++ ) {
+        cout << seqvec[i] << ",";
+    }
+    */
+
     // initialize memory
     for ( t = 0 ; t < nthreads ; t++ ) {
         frommem[t] = (char *) malloc(memsize); 
@@ -131,7 +147,6 @@ int main (int argc, char *argv[])
     // Init pthread
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-
 
     clock_gettime(TIMING_METHOD, &time1); // get start time
     for(t=0; t<nthreads; t++) {
