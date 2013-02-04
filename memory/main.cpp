@@ -34,7 +34,7 @@ using namespace std;
 
 // Global variable
 // Don't change once initialized
-int optypenum; // global variable indicate it is calculating iops or flops.
+int optypenum; // global variable indicating sequential or random
 long long blocksize;
 int nthreads; // number of threads
 long long memsize;  // size of memory per thread
@@ -99,6 +99,7 @@ int main (int argc, char *argv[])
     void *status;
     struct timespec time1, time2;
     double totaltime;
+    string optypestr;
 
 
     // do simple check of arguments
@@ -113,6 +114,11 @@ int main (int argc, char *argv[])
     // initialize parameters
     nthreads = atoi(argv[1]);
     optypenum = atoi(argv[2]);
+    if ( optypenum == 0 ) {
+        optypestr = "Sequential";
+    } else {
+        optypestr = "Random";
+    }
     blocksize = atol(argv[3]);
     memsize = atol(argv[4]);
     blockcnt = memsize/blocksize;
@@ -168,10 +174,11 @@ int main (int argc, char *argv[])
     clock_gettime(TIMING_METHOD, &time2); // get end time
     totaltime = diff(time1,time2).tv_sec + diff(time1,time2).tv_nsec/1000000000.0;
 
-    printf("Copied-Size Total-Time(second) Bandwidth (MB/s) Latency(ms) Block-Size Block-Count\n");
-    printf("%lld %lf %lf %lf %lld %lld GREPMARKER\n", memsize, totaltime, 
+    printf("Copied-Size Total-Time(second) Bandwidth(MB/s) Latency(ms)"
+            " Block-Size Block-Count Access-Type\n");
+    printf("%11lld %18lf %14lf %12lf %10lld %11lld %11s     GREPMARKER\n", memsize, totaltime, 
             (memsize/(1024*1024))/totaltime, (1000.0*totaltime/blockcnt),
-            blocksize, blockcnt);
+            blocksize, blockcnt, optypestr.c_str());
 
     pthread_exit(NULL);
 
