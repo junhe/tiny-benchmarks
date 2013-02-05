@@ -94,7 +94,7 @@ void *DoOperations(void *t)
         long long i;
         long long base;
         base = blockcntperthread * tid;
-        int blocki;
+        long long blocki;
         for ( i = 0 ; i < blockcntperthread ; i++ ) {
             blocki = seqvec[base+i];
             if ( rwmode == MODEREAD ) {
