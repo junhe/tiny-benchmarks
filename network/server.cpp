@@ -88,6 +88,7 @@ void *DoOperations_TCP(void *t)
         bzero(buffer,buffersize);
 
         n = read(socketfd,buffer,buffersize);
+        printf("Received %d bytes.\n", n);
         if (n < 0) error("ERROR reading from socket");
         printf("Here is the message: %s\n",buffer);
         free(buffer);
@@ -181,6 +182,7 @@ int main (int argc, char *argv[])
             bzero(buf,buffersize);
             printf("Waiting for data...\n");
             n = recvfrom(sockfd, buf, buffersize,0,(struct sockaddr *)&cli_addr,&clilen);
+            printf("received %d bytes.\n", n);
             if (n < 0) error("recvfrom");
             write(1,"Received a datagram: ",21);
             write(1,buf,n);
