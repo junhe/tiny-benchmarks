@@ -87,10 +87,15 @@ void *DoOperations_TCP(void *t)
         }
         bzero(buffer,buffersize);
 
-        n = read(socketfd,buffer,buffersize);
+        printf("Waiting for data from client...\n");
+        n = read(socketfd,buffer,buffersize+1);
         printf("Received %d bytes.\n", n);
+        if ( n == 0 ) {
+            // connection disconnected
+            break;
+        }
         if (n < 0) error("ERROR reading from socket");
-        printf("Here is the message: %s\n",buffer);
+
         free(buffer);
     } 
 
