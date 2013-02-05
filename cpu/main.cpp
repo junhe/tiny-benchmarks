@@ -152,7 +152,7 @@ int main (int argc, char *argv[])
 
     double opps = (NUM_LOOP/1000000000.0)  * OPS_PER_LOOP * nthreads / totaltime;
     printf("Op-Type Total-Time(second) Op-Per-Sec(Giga Ops Per Second)\n");
-    printf("%s %lf %lf\n", optype.c_str(), totaltime, opps);
+    printf("%7s %18lf %25lf \n", optype.c_str(), totaltime, opps);
 
     pthread_exit(NULL);
 

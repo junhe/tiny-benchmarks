@@ -212,7 +212,7 @@ int main (int argc, char *argv[])
 
     printf("    File-Size Total-Time(second) Bandwidth(MB/s) Latency(ms) Block-Size Block-Count"
            "   Rwmode Access-Type\n");
-    printf("%13lld %18lf %15lf %10f %10lld %10lld %10s %11s\n",
+    printf("%13lld %18lf %15lf %10f %10lld %10lld %10s %11s GREPMARKER\n",
            datasize_per_thread*nthreads, totaltime, (datasize_per_thread/1000000.0)*nthreads/totaltime, 
            totaltime*1000.0/blockcnt_whole_file, blocksize, blockcnt_whole_file, 
            rwmodestr.c_str(), optypestr.c_str()); 
