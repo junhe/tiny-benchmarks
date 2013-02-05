@@ -27,7 +27,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h> 
 
 #define NUM_THREADS_MAX     128
 //#define TIMING_METHOD CLOCK_PROCESS_CPUTIME_ID
@@ -47,6 +49,7 @@ long long buffersize;
 int nthreads; // number of threads
 long long datasize_per_thread;  // size of memory per thread
 string ipstr;
+int portno;
 
 char *datamem[NUM_THREADS_MAX]; // copy from this memory
 
@@ -64,17 +67,49 @@ struct timespec diff(struct timespec start, struct timespec end)
     return temp;
 }
 
-//  
-void *DoOperations(void *t)
+void error(const char *msg)
 {
-    long tid;
+    perror(msg);
+    exit(0);
+}
 
-    tid = (long)t;
-    off_t bytes = 0;
+//  
+void *DoOperations_UDP(void *t)
+{
+    //long tid;
+    int sock, n;
+    unsigned int length;
+    struct sockaddr_in server, from;
+    struct hostent *hp;
+    char buffer[256];
 
-    if ( protocoltypenum == PROTOCOL_TCP ) {
-    } else {
-    }
+    sock= socket(AF_INET, SOCK_DGRAM, 0);
+    if (sock < 0) error("socket");
+
+    server.sin_family = AF_INET;
+    hp = gethostbyname(ipstr.c_str());
+    if (hp==0) error("Unknown host");
+
+    bcopy((char *)hp->h_addr, 
+            (char *)&server.sin_addr,
+            hp->h_length);
+    server.sin_port = htons(portno);
+    length=sizeof(struct sockaddr_in);
+    printf("Please enter the message: ");
+    bzero(buffer,256);
+    fgets(buffer,255,stdin);
+    n=sendto(sock,buffer,
+            strlen(buffer),0,(const struct sockaddr *)&server,length);
+    if (n < 0) error("Sendto");
+
+    close(sock);
+    pthread_exit((void*) t);
+}
+
+void *DoOperations_TCP(void *t)
+{
+    //long tid;
+
     pthread_exit((void*) t);
 }
 
@@ -91,9 +126,9 @@ int main (int argc, char *argv[])
     string protocol_type_str;
 
     // do simple check of arguments
-    if ( argc != 6 ) {
+    if ( argc != 7 ) {
         printf("Usage: %s nthreads protocol-type buffer-size data-size-per-thread"
-               " ip\n", argv[0]);
+               " ip portno\n", argv[0]);
         printf("protocol-type: 0 - tcp\n");
         printf("               1 - udp\n");
         printf("buffer-size should be dividor of data-size-per-thread\n");
@@ -112,24 +147,23 @@ int main (int argc, char *argv[])
     buffersize = atol(argv[3]);
     datasize_per_thread = atol(argv[4]);
     ipstr = argv[5];
+    portno = atoi(argv[6]);
 
-
-    // initialize memory
-    for ( t = 0 ; t < nthreads ; t++ ) {
-        datamem[t] = (char *) malloc(buffersize); 
-        if ( datamem[t] == NULL ) {
-            printf("error when allocating memmory.\n");
-            exit(1);
-        }
-    }
+    cout << "Port :" << portno << endl;
 
     // Init pthread
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
     clock_gettime(TIMING_METHOD, &time1); // get start time
+
     for(t=0; t<nthreads; t++) {
-        rc = pthread_create(&thread[t], &attr, DoOperations, (void *)t); 
+        if ( protocoltypenum == PROTOCOL_TCP ) {
+            rc = pthread_create(&thread[t], &attr, DoOperations_TCP, (void *)t); 
+        } else {
+            rc = pthread_create(&thread[t], &attr, DoOperations_UDP, (void *)t); 
+        }
+
         if (rc) {
             exit(-1);
         }
