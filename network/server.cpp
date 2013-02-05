@@ -31,7 +31,7 @@
 #include <netinet/in.h>
 
 
-#define NUM_THREADS_MAX     128
+//#define NUM_THREADS_MAX     128
 //#define TIMING_METHOD CLOCK_PROCESS_CPUTIME_ID
 #define TIMING_METHOD CLOCK_REALTIME
 
@@ -49,8 +49,6 @@ long long buffersize;
 int nthreads; // number of threads
 long long datasize_per_thread;  // size of memory per thread
 string ipstr;
-
-char *datamem[NUM_THREADS_MAX]; // copy from this memory
 
 // Calculate the time period
 struct timespec diff(struct timespec start, struct timespec end)
@@ -72,7 +70,7 @@ void error(const char *msg)
     exit(1);
 }
 
-void *DoOperations(void *t)
+void *DoOperations_TCP(void *t)
 {
     int socketfd;
 
@@ -92,9 +90,7 @@ void *DoOperations(void *t)
 
 int main (int argc, char *argv[])
 {
-    pthread_t thread[NUM_THREADS_MAX];
     int rc;
-    long t;
     string fpath;
     string protocol_type_str;
 
@@ -125,34 +121,61 @@ int main (int argc, char *argv[])
     buffersize = atol(argv[3]);
     portno = atoi(argv[4]);
 
+    if ( protocoltypenum == PROTOCOL_TCP ) {
+        // TCP
+        sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (sockfd < 0) 
+            error("ERROR opening socket");
+        bzero((char *) &serv_addr, sizeof(serv_addr));
+        serv_addr.sin_family = AF_INET;
+        serv_addr.sin_addr.s_addr = INADDR_ANY;
+        serv_addr.sin_port = htons(portno);
+        if (bind(sockfd, (struct sockaddr *) &serv_addr,
+                    sizeof(serv_addr)) < 0) 
+            error("ERROR on binding");
+        listen(sockfd,5);
+        clilen = sizeof(cli_addr);
 
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) 
-        error("ERROR opening socket");
-    bzero((char *) &serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(portno);
-    if (bind(sockfd, (struct sockaddr *) &serv_addr,
-          sizeof(serv_addr)) < 0) 
-          error("ERROR on binding");
-    listen(sockfd,5);
-    clilen = sizeof(cli_addr);
-
-    t = 0; // thread count
-    while (1) {
-        newsockfd = accept(sockfd, 
-                (struct sockaddr *) &cli_addr, 
-                &clilen);
-        if (newsockfd < 0) 
-            error("ERROR on accept");
-        rc = pthread_create(&thread[t++], NULL, DoOperations, (void *)newsockfd); 
-        if (rc || t >= NUM_THREADS_MAX) {
-            exit(-1);
+        while (1) {
+            newsockfd = accept(sockfd, 
+                    (struct sockaddr *) &cli_addr, 
+                    &clilen);
+            if (newsockfd < 0) 
+                error("ERROR on accept");
+            pthread_t tmpid;
+            rc = pthread_create(&tmpid, NULL, DoOperations_TCP, (void *)newsockfd); 
+            if (rc) {
+                exit(-1);
+            }
         }
-    }
-    close(sockfd);
+        close(sockfd);
+    } else {
+        // UDP
+        sockfd=socket(AF_INET, SOCK_DGRAM, 0);
+        if (sockfd < 0) 
+            error("ERROR opening socket");
+        bzero((char *) &serv_addr, sizeof(serv_addr));
+        serv_addr.sin_family = AF_INET;
+        serv_addr.sin_addr.s_addr = INADDR_ANY;
+        serv_addr.sin_port = htons(portno);
+        if (bind(sockfd, (struct sockaddr *) &serv_addr,
+                    sizeof(serv_addr)) < 0) 
+            error("ERROR on binding");
+        clilen = sizeof(cli_addr);
 
+        char buf[1024];
+        while (1) {
+            int n;
+            bzero(buf,256);
+            printf("Waiting for data...\n");
+            n = recvfrom(sockfd, buf, 1024,0,(struct sockaddr *)&cli_addr,&clilen);
+            if (n < 0) error("recvfrom");
+            write(1,"Received a datagram: ",21);
+            write(1,buf,n);
+        }
+
+        close(sockfd);
+    }
     pthread_exit(NULL);
 }
 
