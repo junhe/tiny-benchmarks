@@ -26,12 +26,12 @@
 #define TIMING_METHOD CLOCK_REALTIME
 
 #define OPS_PER_LOOP 20
-#define NUM_LOOP     100000000
 
 
 using namespace std;
 
 int optypenum; // global variable indicate it is calculating iops or flops.
+long long int g_num_loop;
 
 // Calculate the time period
 struct timespec diff(struct timespec start, struct timespec end)
@@ -50,7 +50,7 @@ struct timespec diff(struct timespec start, struct timespec end)
 // Use the cpu
 void *DoOperations(void *t)
 {
-    unsigned long long i;
+    long long i;
     //long tid;
     double a = 0.9980;
     double b = -100000.0;
@@ -62,7 +62,7 @@ void *DoOperations(void *t)
     
     if ( optypenum == 0 ) {
         printf("Doing floating operations\n");
-        for (i = 0; i < NUM_LOOP; i++)
+        for (i = 0; i < g_num_loop; i++)
         {
             // Put more operations in a loop so the
             // index operations have smaller effects
@@ -80,7 +80,7 @@ void *DoOperations(void *t)
         //printf("Thread %ld done. Result = %e\n",tid, b);
     } else {
         printf("Doing int operations\n");
-        for (i = 0; i < NUM_LOOP; i++)
+        for (i = 0; i < g_num_loop; i++)
         {
             bi += ai*3 ;
             bi += ai*3 ;
@@ -111,13 +111,15 @@ int main (int argc, char *argv[])
     struct timespec time1, time2;
     double totaltime;
 
-    if ( argc != 3 ) {
-        printf("Usage: %s nthreads flops/iops\n", argv[0]);
+    if ( argc != 4 ) {
+        printf("Usage: %s nthreads flops/iops num_loop\n", argv[0]);
         exit(1);
     }
 
     nthreads = atoi(argv[1]);
     optype = argv[2];
+    g_num_loop = atol(argv[3]);
+    printf("%lld\n", g_num_loop);
     
     if ( optype == "flops" ) {
         optypenum = 0;
@@ -150,9 +152,9 @@ int main (int argc, char *argv[])
     clock_gettime(TIMING_METHOD, &time2); // get end time
     totaltime = diff(time1,time2).tv_sec + diff(time1,time2).tv_nsec/1000000000.0;
 
-    double opps = (NUM_LOOP/1000000000.0)  * OPS_PER_LOOP * nthreads / totaltime;
+    double opps = (g_num_loop/1000000000.0)  * OPS_PER_LOOP * nthreads / totaltime;
     printf("Op-Type Total-Time(second) Op-Per-Sec(Giga Ops Per Second)\n");
-    printf("%7s %18lf %25lf \n", optype.c_str(), totaltime, opps);
+    printf("%7s %18lf %25lf   GREPMARKER\n", optype.c_str(), totaltime, opps);
 
     pthread_exit(NULL);
 
