@@ -75,14 +75,24 @@ void *DoOperations_TCP(void *t)
     int socketfd;
 
     socketfd = (int)t;
-    int n;
-    char buffer[256];
 
-    bzero(buffer,256);
-    n = read(socketfd,buffer,255);
-    if (n < 0) error("ERROR reading from socket");
-    printf("Here is the message: %s\n",buffer);
-   
+    while (1) {
+        int n;
+        char *buffer;
+
+        buffer = (char *)malloc( buffersize );
+        if ( buffer == NULL ) {
+            perror("Unable to allocate buffer\n");
+            exit(1);
+        }
+        bzero(buffer,buffersize);
+
+        n = read(socketfd,buffer,buffersize);
+        if (n < 0) error("ERROR reading from socket");
+        printf("Here is the message: %s\n",buffer);
+        free(buffer);
+    } 
+
     close(socketfd);
 
     pthread_exit((void*) t);
@@ -163,16 +173,19 @@ int main (int argc, char *argv[])
             error("ERROR on binding");
         clilen = sizeof(cli_addr);
 
-        char buf[1024];
+
+        char *buf;
+        buf = (char *)malloc(buffersize);
         while (1) {
             int n;
-            bzero(buf,256);
+            bzero(buf,buffersize);
             printf("Waiting for data...\n");
-            n = recvfrom(sockfd, buf, 1024,0,(struct sockaddr *)&cli_addr,&clilen);
+            n = recvfrom(sockfd, buf, buffersize,0,(struct sockaddr *)&cli_addr,&clilen);
             if (n < 0) error("recvfrom");
             write(1,"Received a datagram: ",21);
             write(1,buf,n);
         }
+        free(buf);
 
         close(sockfd);
     }
