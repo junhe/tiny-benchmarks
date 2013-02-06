@@ -37,8 +37,8 @@ using namespace std;
 int optypenum; // global variable indicating sequential or random
 long long blocksize;
 int nthreads; // number of threads
-long long memsize;  // size of memory per thread
-long long blockcnt; 
+long long memsizeperthread;  // size of memory per thread
+long long blockcntperthread; 
 vector<long long> seqvec;
 
 char *frommem[NUM_THREADS_MAX]; // copy from this memory
@@ -69,7 +69,7 @@ void *DoOperations(void *t)
     if ( optypenum == 0 ) {
         // sequential copy
         int i;
-        for ( i = 0 ; i < blockcnt ; i++ ) {
+        for ( i = 0 ; i < blockcntperthread ; i++ ) {
             memcpy(tomem[tid] + (i*blocksize), 
                    frommem[tid] + (i*blocksize), 
                    blocksize);
@@ -78,7 +78,7 @@ void *DoOperations(void *t)
         // random copy
         int i;
         int blocki;
-        for ( i = 0 ; i < blockcnt ; i++ ) {
+        for ( i = 0 ; i < blockcntperthread ; i++ ) {
             blocki = seqvec[i];
             memcpy(tomem[tid] + (blocki*blocksize), 
                    frommem[tid] + (blocki*blocksize), 
@@ -120,11 +120,11 @@ int main (int argc, char *argv[])
         optypestr = "Random";
     }
     blocksize = atol(argv[3]);
-    memsize = atol(argv[4]);
-    blockcnt = memsize/blocksize;
+    memsizeperthread = atol(argv[4]);
+    blockcntperthread = memsizeperthread/blocksize;
 
     long long i;
-    for ( i = 0 ; i < blockcnt ; i++ ) {
+    for ( i = 0 ; i < blockcntperthread ; i++ ) {
         seqvec.push_back(i);
     }
 
@@ -138,12 +138,12 @@ int main (int argc, char *argv[])
 
     // initialize memory
     for ( t = 0 ; t < nthreads ; t++ ) {
-        frommem[t] = (char *) malloc(memsize); 
+        frommem[t] = (char *) malloc(memsizeperthread); 
         if ( frommem[t] == NULL ) {
             printf("error when allocating memmory.\n");
             exit(1);
         }
-        tomem[t] = (char *) malloc(memsize); 
+        tomem[t] = (char *) malloc(memsizeperthread); 
         if ( tomem[t] == NULL ) {
             printf("error when allocating memmory.\n");
             exit(1);
@@ -176,9 +176,11 @@ int main (int argc, char *argv[])
 
     printf("Copied-Size Total-Time(second) Bandwidth(MB/s) Latency(ms)"
             " Block-Size Block-Count Access-Type\n");
-    printf("%11lld %18lf %14lf %12lf %10lld %11lld %11s     GREPMARKER\n", memsize, totaltime, 
-            (memsize/(1024*1024))/totaltime, (1000.0*totaltime/blockcnt),
-            blocksize, blockcnt, optypestr.c_str());
+    long long totalsize = memsizeperthread * nthreads;
+    long long totalblockcnt = blockcntperthread * nthreads;
+    printf("%11lld %18lf %14lf %12lf %10lld %11lld %11s     GREPMARKER\n", totalsize, totaltime, 
+            (totalsize/(1024.0*1024.0))/totaltime, (1000.0*totaltime/(blockcntperthread*nthreads)),
+            blocksize, totalblockcnt, optypestr.c_str());
 
     pthread_exit(NULL);
 
