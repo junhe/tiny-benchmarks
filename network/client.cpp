@@ -146,7 +146,7 @@ void *DoOperations_TCP(void *t)
                                                  // you need to send
     for ( i = 0 ; i < bufcnt ; i++ ) {
         n = write(sockfd,buffer,buffersize);
-        printf("sent %d bytes.\n", n);
+        //printf("sent %d bytes.\n", n);
         if (n < 0) 
              error("ERROR writing to socket");
     }
@@ -191,7 +191,7 @@ int main (int argc, char *argv[])
     ipstr = argv[5];
     portno = atoi(argv[6]);
 
-    cout << "Port :" << portno << endl;
+    //cout << "Port :" << portno << endl;
 
     // Init pthread
     pthread_attr_init(&attr);
@@ -226,7 +226,7 @@ int main (int argc, char *argv[])
 
     printf("Total-Data-Size Total-Time(second) Bandwidth(MB/s) Latency(ms)"
            " Protocol\n");
-    printf("%15d %18lf %15lf %11lf %8s GREPMAKER\n",
+    printf("%15d %18lf %15lf %11lf %8s GREPMARKER\n",
             totalsize, totaltime, (totalsize/(1024.0*1024.0))/totaltime, 
             totaltime*1000.0/(totalsize/buffersize), protocol_type_str.c_str());
 
