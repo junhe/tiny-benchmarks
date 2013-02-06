@@ -86,9 +86,9 @@ void *DoOperations_TCP(void *t)
         }
         bzero(buffer,buffersize);
 
-        printf("Waiting for data from client...\n");
+        //printf("Waiting for data from client...\n");
         n = read(socketfd,buffer,buffersize+1);
-        printf("Received %d bytes.\n", n);
+        //printf("Received %d bytes.\n", n);
         if ( n == 0 ) {
             // connection disconnected
             break;
@@ -183,12 +183,12 @@ int main (int argc, char *argv[])
         while (1) {
             int n;
             bzero(buf,buffersize);
-            printf("Waiting for data...\n");
+            //printf("Waiting for data...\n");
             n = recvfrom(sockfd, buf, buffersize,0,(struct sockaddr *)&cli_addr,&clilen);
-            printf("received %d bytes.\n", n);
+            //printf("received %d bytes.\n", n);
             if (n < 0) error("recvfrom");
-            write(1,"Received a datagram: ",21);
-            write(1,buf,n);
+            //write(1,"Received a datagram: ",21);
+            //write(1,buf,n);
         }
         free(buf);
 
