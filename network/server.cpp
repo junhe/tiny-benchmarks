@@ -73,7 +73,7 @@ void *DoOperations_TCP(void *t)
 {
     int socketfd;
 
-    socketfd = (int)t;
+    socketfd = (int)*((int*)t);
 
     while (1) {
         int n;
@@ -157,7 +157,7 @@ int main (int argc, char *argv[])
             if (newsockfd < 0) 
                 error("ERROR on accept");
             pthread_t tmpid;
-            rc = pthread_create(&tmpid, NULL, DoOperations_TCP, (void *)newsockfd); 
+            rc = pthread_create(&tmpid, NULL, DoOperations_TCP, (void *)&newsockfd); 
             if (rc) {
                 exit(-1);
             }
