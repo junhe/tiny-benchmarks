@@ -46,7 +46,6 @@ int protocoltypenum;
 #define PROTOCOL_UDP 1
 
 long long buffersize;
-int nthreads; // number of threads
 long long datasize_per_thread;  // size of memory per thread
 string ipstr;
 
@@ -117,7 +116,7 @@ int main (int argc, char *argv[])
 
     // do simple check of arguments
     if ( argc != 5 ) {
-        printf("Usage: %s nthreads protocol-type buffer-size"
+        printf("Usage: %s protocol-type buffer-size"
                " portno\n", argv[0]);
         printf("protocol-type: 0 - tcp\n");
         printf("               1 - udp\n");
@@ -126,7 +125,6 @@ int main (int argc, char *argv[])
     }
 
     // initialize parameters
-    nthreads = atoi(argv[1]);
     protocoltypenum = atoi(argv[2]);
     if ( protocoltypenum == PROTOCOL_TCP ) {
         protocol_type_str = "TCP";
