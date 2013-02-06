@@ -141,8 +141,8 @@ void *DoOperations_TCP(void *t)
 
     buffer = (char *)malloc( buffersize );
    
-    int i;
-    int bufcnt = datasize_per_thread/buffersize; // how many buffer
+    long long i;
+    long long bufcnt = datasize_per_thread/buffersize; // how many buffer
                                                  // you need to send
     for ( i = 0 ; i < bufcnt ; i++ ) {
         n = write(sockfd,buffer,buffersize);
@@ -222,11 +222,11 @@ int main (int argc, char *argv[])
 
     clock_gettime(TIMING_METHOD, &time2); // get end time
     totaltime = diff(time1,time2).tv_sec + diff(time1,time2).tv_nsec/1000000000.0;
-    int totalsize = datasize_per_thread * nthreads;
+    long long totalsize = datasize_per_thread * nthreads;
 
     printf("Total-Data-Size Total-Time(second) Bandwidth(MB/s) Latency(ms)"
            " Protocol\n");
-    printf("%15d %18lf %15lf %11lf %8s GREPMARKER\n",
+    printf("%15lld %18lf %15lf %11lf %8s GREPMARKER\n",
             totalsize, totaltime, (totalsize/(1024.0*1024.0))/totaltime, 
             totaltime*1000.0/(totalsize/buffersize), protocol_type_str.c_str());
 
