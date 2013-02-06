@@ -29,7 +29,7 @@ if __name__ == '__main__':
     killer = subprocess.Popen(["pkill", "server.x"])
     killer.wait()
 
-    for rep in range(1):
+    for rep in range(10):
         for ser_para in ser_paralist:
             ser_para = list(ser_para)
             #print ser_para,
