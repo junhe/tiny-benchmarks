@@ -21,20 +21,24 @@ if __name__ == '__main__':
     header = "nthreads optype nloops totaltime opps"
     resultf.write(header + "\n")
     print header
-    for para in paralist:
-        mycmd = [exefile] + list(para)
-        proc = subprocess.Popen(mycmd,
-                       stdout=subprocess.PIPE,
-                       stderr=logf)
-        proc.wait()
-        for line in proc.stdout:
-            if 'GREPMARKER' in line:
-                parastr = ''.join(str(e)+" " for e in list(para))
-                perf = line.split()[1:3]
-                perfstr = ''.join(str(e)+" " for e in perf)
-                print parastr, perfstr
-                resultf.write( parastr + perfstr + "\n" ) 
-                sys.stdout.flush()
+
+    for rep in range(10):
+        for para in paralist:
+            mycmd = [exefile] + list(para)
+            proc = subprocess.Popen(mycmd,
+                           stdout=subprocess.PIPE,
+                           stderr=logf)
+            proc.wait()
+            for line in proc.stdout:
+                if 'GREPMARKER' in line:
+                    parastr = ''.join(str(e)+" " for e in list(para))
+                    perf = line.split()[1:3]
+                    perfstr = ''.join(str(e)+" " for e in perf)
+                    print parastr, perfstr
+                    resultf.write( parastr + perfstr + "\n" ) 
+                    sys.stdout.flush()
+        
+    
     logf.close()
     resultf.close()
 
