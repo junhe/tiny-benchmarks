@@ -115,7 +115,7 @@ int main (int argc, char *argv[])
     struct sockaddr_in serv_addr, cli_addr;
 
     // do simple check of arguments
-    if ( argc != 5 ) {
+    if ( argc != 4 ) {
         printf("Usage: %s protocol-type buffer-size"
                " portno\n", argv[0]);
         printf("protocol-type: 0 - tcp\n");
@@ -125,15 +125,15 @@ int main (int argc, char *argv[])
     }
 
     // initialize parameters
-    protocoltypenum = atoi(argv[2]);
+    protocoltypenum = atoi(argv[1]);
     if ( protocoltypenum == PROTOCOL_TCP ) {
         protocol_type_str = "TCP";
     } else {
         protocol_type_str = "UDP";
     }
     
-    buffersize = atol(argv[3]);
-    portno = atoi(argv[4]);
+    buffersize = atol(argv[2]);
+    portno = atoi(argv[3]);
 
     if ( protocoltypenum == PROTOCOL_TCP ) {
         // TCP
