@@ -3,9 +3,9 @@ import sys
 from time import gmtime, strftime
 
 exefile = "./cputest.x"
-nthreads = ["1","2","4"]
+nthreads = ["1","2","4","8"]
 optype = ["flops", "iops"]
-nloops = ["1000000", "10000000", "100000000"]
+nloops = ["100000000"]
 
 parameters = [nthreads, optype, nloops]
 
