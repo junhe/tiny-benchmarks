@@ -5,7 +5,7 @@ from time import gmtime, strftime
 #./server.x nthreads protocol-type buffer-size portno
 ser_exefile = "./server.x"
 ser_protocoltype = ["0", "1"]
-ser_buffersize = ["1024", str(1024*64)]
+ser_buffersize = ["1", "1024", str(1024*64)]
 ser_portno = ["10000"]
 
 ser_parameters = [ser_protocoltype, ser_buffersize, ser_portno]
@@ -19,9 +19,9 @@ resultname = jobid + ".result"
 if __name__ == '__main__':
     logf = open(logname, 'a')
     resultf = open(resultname, 'a')
-    #printf("    File-Size Total-Time(second) Bandwidth(MB/s) Latency(ms) Block-Size Block-Count"
-    #           "   Rwmode Access-Type\n");
-    header = "nthreads dataperthread fpath    filesize totaltime bandwidth latency blocksize blockcnt rwmode actype"
+    #printf("Total-Data-Size Total-Time(second) Bandwidth(MB/s) Latency(ms)"
+    #           " Protocol\n");
+    header = "nthreads buffersize dataperthread    totalsize totaltime bandwidth latency protocal"
     resultf.write(header + "\n")
     print header
     
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     for rep in range(1):
         for ser_para in ser_paralist:
             ser_para = list(ser_para)
-            print ser_para,
+            #print ser_para,
 
             mycmd = [ser_exefile] + list(ser_para)
 
@@ -61,9 +61,9 @@ if __name__ == '__main__':
                                             stderr = logf)
                 cli_proc.wait() 
                 for line in cli_proc.stdout:
-                    print line,
+                    #print line,
                     if 'GREPMARKER' in line:
-                        parastr = ''.join(str(e)+" " for e in [para[0], para[3], para[4]])
+                        parastr = ''.join(str(e)+" " for e in [cli_para[0], cli_para[2], cli_para[3]])
                         perf = line.split()
                         perfstr = ''.join(str(e)+" " for e in perf[0:-1])
                         print parastr, perfstr
